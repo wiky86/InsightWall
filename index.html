@@ -158,7 +158,7 @@
         ];
 
         async function fetchData() {
-            if (GOOGLE_SHEET_API_URL.includes("https://script.google.com/macros/s/AKfycbz0gBzAsoQAFl96ZBk6m_hXCHysKr4dksflpXCuvnPD5VK1qiuXdGBUMYUqdGIOVEbJ/exec")) {
+            if (GOOGLE_SHEET_API_URL.includes("여기에_웹앱_URL을_붙여넣으세요")) {
                 document.getElementById('poster-wall').innerHTML = '<div class="col-span-full text-center py-10 text-red-500 font-bold">API URL이 설정되지 않았습니다. 코드를 확인해주세요.</div>';
                 return;
             }
@@ -262,4 +262,5 @@
         fetchData(); 
     </script>
 </body>
+
 </html>
