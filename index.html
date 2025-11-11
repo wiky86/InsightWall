@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ko" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insight Wall</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --background: 0 0% 100%; --foreground: 240 10% 3.9%;
+            --card: 0 0% 100%; --card-foreground: 240 10% 3.9%;
+            --popover: 0 0% 100%; --popover-foreground: 240 10% 3.9%;
+            --primary: 240 5.9% 10%; --primary-foreground: 0 0% 98%;
+            --secondary: 240 4.8% 95.9%; --secondary-foreground: 240 5.9% 10%;
+            --muted: 240 4.8% 95.9%; --muted-foreground: 240 3.8% 46.1%;
+            --accent: 240 4.8% 95.9%; --accent-foreground: 240 5.9% 10%;
+            --destructive: 0 84.2% 60.2%; --destructive-foreground: 0 0% 98%;
+            --border: 240 5.9% 90%; --input: 240 5.9% 90%;
+            --ring: 240 5.9% 10%; --radius: 0.5rem;
+        }
+        .dark {
+            --background: 240 10% 3.9%; --foreground: 0 0% 98%;
+            --card: 240 10% 3.9%; --card-foreground: 0 0% 98%;
+            --popover: 240 10% 3.9%; --popover-foreground: 0 0% 98%;
+            --primary: 0 0% 98%; --primary-foreground: 240 5.9% 10%;
+            --secondary: 240 3.7% 15.9%; --secondary-foreground: 0 0% 98%;
+            --muted: 240 3.7% 15.9%; --muted-foreground: 240 5% 64.9%;
+            --accent: 240 3.7% 15.9%; --accent-foreground: 0 0% 98%;
+            --destructive: 0 62.8% 30.6%; --destructive-foreground: 0 0% 98%;
+            --border: 240 3.7% 15.9%; --input: 240 3.7% 15.9%;
+            --ring: 240 4.9% 83.9%;
+        }
+        body { font-family: 'Pretendard', sans-serif; background-color: hsl(var(--background)); color: hsl(var(--foreground)); transition: background-color 0.3s, color 0.3s; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); } 20%, 40%, 60%, 80% { transform: translateX(4px); } }
+        .animate-shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        .font-mono-nums { font-variant-numeric: tabular-nums; }
+    </style>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { colors: { border: "hsl(var(--border))", input: "hsl(var(--input))", ring: "hsl(var(--ring))", background: "hsl(var(--background))", foreground: "hsl(var(--foreground))", primary: { DEFAULT: "hsl(var(--primary))", foreground: "hsl(var(--primary-foreground))" }, secondary: { DEFAULT: "hsl(var(--secondary))", foreground: "hsl(var(--secondary-foreground))" }, destructive: { DEFAULT: "hsl(var(--destructive))", foreground: "hsl(var(--destructive-foreground))" }, muted: { DEFAULT: "hsl(var(--muted))", foreground: "hsl(var(--muted-foreground))" }, accent: { DEFAULT: "hsl(var(--accent))", foreground: "hsl(var(--accent-foreground))" }, popover: { DEFAULT: "hsl(var(--popover))", foreground: "hsl(var(--popover-foreground))" }, card: { DEFAULT: "hsl(var(--card))", foreground: "hsl(var(--card-foreground))" } }, borderRadius: { lg: "var(--radius)", md: "calc(var(--radius) - 2px)", sm: "calc(var(--radius) - 4px)" } } }
+        }
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) { document.documentElement.classList.add('dark') } else { document.documentElement.classList.remove('dark') }
+    </script>
+</head>
+<body class="min-h-screen antialiased relative overflow-hidden">
+
+    <div id="access-gate" class="fixed inset-0 z-[100] bg-background flex items-center justify-center p-4 transition-opacity duration-500">
+        <div class="w-full max-w-sm flex flex-col items-center space-y-6 text-center animate-in fade-in zoom-in duration-500">
+            <div class="rounded-full bg-secondary p-4 mb-2"><i data-lucide="lock" class="w-8 h-8 text-muted-foreground"></i></div>
+            <div class="space-y-2"><h1 class="text-2xl font-bold tracking-tight">Insight Wall</h1><p class="text-muted-foreground text-sm">부서 내부 인원만 접근 가능합니다.<br>비밀번호를 입력해주세요.</p></div>
+            <div class="w-full space-y-4">
+                <div class="relative"><input type="password" id="gate-password" class="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 text-center tracking-widest text-lg" placeholder="••••" maxlength="20"></div>
+                <p id="gate-error" class="text-sm text-red-500 font-medium hidden">비밀번호가 올바르지 않습니다.</p>
+                <button id="gate-submit" class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bg-primary text-primary-foreground hover:bg-primary/90 h-11 px-8 w-full">입장하기</button>
+            </div>
+        </div>
+    </div>
+
+    <header class="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div class="container mx-auto px-6 h-14 flex items-center justify-between">
+            <span class="font-bold text-lg tracking-tight flex items-center gap-2 cursor-pointer" onclick="closeBoard()">
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Insight Wall
+            </span>
+            <div class="flex items-center space-x-4">
+                <div class="hidden sm:flex items-center space-x-4 text-xs font-medium text-muted-foreground bg-secondary/50 px-3 py-1.5 rounded-full font-mono-nums">
+                    <div class="flex items-center gap-1.5"><span class="opacity-70">TODAY</span><span id="visit-today" class="text-foreground font-bold transition-all duration-500">0</span></div>
+                    <div class="w-px h-3 bg-border"></div>
+                    <div class="flex items-center gap-1.5"><span class="opacity-70">TOTAL</span><span id="visit-total" class="text-primary font-bold transition-all duration-500">0</span></div>
+                </div>
+                <button id="theme-toggle" class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-9 w-9"><i data-lucide="sun" class="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"></i><i data-lucide="moon" class="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"></i><span class="sr-only">테마 전환</span></button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-8">
+        <div id="main-dashboard" class="transition-opacity duration-300">
+            <div class="mb-8 space-y-2">
+                <h1 class="text-3xl font-bold tracking-tight">Insight Post</h1>
+                <p class="text-muted-foreground">우리의 인사이트를 자유롭게 공유해주세요.</p>
+            </div>
+            <div id="poster-wall" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-start">
+                <div class="col-span-full text-center py-20 text-muted-foreground animate-pulse">
+                    데이터를 불러오는 중입니다...
+                </div>
+            </div>
+        </div>
+
+        <div id="board-view" class="hidden transition-opacity duration-300">
+            <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="space-y-1">
+                    <button onclick="closeBoard()" class="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 mb-2 transition-colors">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Dashboard
+                    </button>
+                    <h2 id="board-title" class="text-3xl font-bold tracking-tight flex items-center gap-3"></h2>
+                    <p id="board-desc" class="text-muted-foreground"></p>
+                </div>
+                <button id="board-write-btn" class="inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 transition-all active:scale-95 gap-2 whitespace-nowrap">
+                    <i data-lucide="pen-line" class="w-4 h-4"></i> Write New
+                </button>
+            </div>
+            <div class="relative mb-4 max-w-md">
+                <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"></i>
+                <input id="board-search" type="text" placeholder="제목, 해시태그, 작성자 검색..." class="flex h-10 w-full rounded-md border border-input bg-background pl-10 pr-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+            </div>
+            <div class="rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="border-b bg-muted/50">
+                            <tr class="text-left text-muted-foreground">
+                                <th class="h-12 px-4 font-medium w-2/3">제목</th>
+                                <th class="h-12 px-4 font-medium whitespace-nowrap">작성자</th>
+                                <th class="h-12 px-4 font-medium text-right whitespace-nowrap">날짜</th>
+                            </tr>
+                        </thead>
+                        <tbody id="board-list" class="divide-y divide-border"></tbody>
+                    </table>
+                </div>
+                <div id="no-result" class="hidden p-8 text-center text-muted-foreground">검색 결과가 없습니다.</div>
+            </div>
+        </div>
+    </main>
+
+    <div id="write-modal" class="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm hidden items-center justify-center p-4 transition-all duration-300" role="dialog">
+        <div class="w-full max-w-lg rounded-xl border bg-card text-card-foreground shadow-lg animate-in fade-in-0 zoom-in-95 max-h-[90vh] overflow-y-auto no-scrollbar">
+            <div class="flex flex-col space-y-1.5 p-6">
+                <h3 class="text-lg font-semibold leading-none tracking-tight">새로운 인사이트 공유</h3>
+                <p class="text-sm text-muted-foreground">부서원들과 공유할 유용한 정보를 입력해주세요.</p>
+            </div>
+            <div class="p-6 pt-0 grid gap-4">
+                <div class="grid gap-2"><label class="text-sm font-medium leading-none" for="modal-category">카테고리</label><select id="modal-category" class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 appearance-none"><option value="youtube">Trending Videos</option><option value="news">Industry News</option><option value="paper">Research Papers</option><option value="share">Team Insights</option></select></div>
+                <div class="grid gap-2"><label class="text-sm font-medium leading-none" for="modal-title">제목 <span class="text-red-500">*</span></label><input id="modal-title" required class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" placeholder="예: 2025년 상반기 트렌드 분석"></div>
+                <div class="grid gap-2"><label class="text-sm font-medium leading-none" for="modal-tags">해시태그</label><input id="modal-tags" class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" placeholder="예: AI, 트렌드, 2025 (쉼표로 구분)"></div>
+                <div class="grid gap-2"><label class="text-sm font-medium leading-none" for="modal-link">관련 링크 (URL)</label><input id="modal-link" type="url" class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" placeholder="https://..."></div>
+                <div class="grid gap-2"><label class="text-sm font-medium leading-none" for="modal-comment">코멘트</label><textarea id="modal-comment" class="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-none" placeholder="이 정보의 핵심이나 팀에 적용할 점 등을 간단히 적어주세요."></textarea></div>
+                <div class="grid gap-2"><label class="text-sm font-medium leading-none" for="modal-author">작성자</label><input id="modal-author" class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" placeholder="이름을 입력하세요"></div>
+            </div>
+            <div class="flex items-center p-6 pt-0 justify-end space-x-2">
+                <button id="modal-close" class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">취소</button>
+                <button id="modal-submit" class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">공유하기</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // [필수] 본인의 웹 앱 URL로 교체하세요!
+        const GOOGLE_SHEET_API_URL = "https://script.google.com/macros/s/AKfycbz0gBzAsoQAFl96ZBk6m_hXCHysKr4dksflpXCuvnPD5VK1qiuXdGBUMYUqdGIOVEbJ/exec";
+
+        let groupedMockData = [
+             { category: 'youtube', posterTitle: 'Trending Videos', description: '최신 업계 관련 유튜브 영상', icon: 'youtube', items: [] },
+             { category: 'news', posterTitle: 'Industry News', description: '놓치면 안 될 주요 뉴스', icon: 'newspaper', items: [] },
+             { category: 'paper', posterTitle: 'Research Papers', description: '신기술 논문 및 리포트', icon: 'book-open', items: [] },
+             { category: 'share', posterTitle: 'Team Insights', description: '팀원들의 자유로운 공유', icon: 'lightbulb', items: [] }
+        ];
+
+        async function fetchData() {
+            if (GOOGLE_SHEET_API_URL.includes("https://script.google.com/macros/s/AKfycbz0gBzAsoQAFl96ZBk6m_hXCHysKr4dksflpXCuvnPD5VK1qiuXdGBUMYUqdGIOVEbJ/exec")) {
+                document.getElementById('poster-wall').innerHTML = '<div class="col-span-full text-center py-10 text-red-500 font-bold">API URL이 설정되지 않았습니다. 코드를 확인해주세요.</div>';
+                return;
+            }
+            try {
+                const response = await fetch(GOOGLE_SHEET_API_URL);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                processSheetData(data);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                document.getElementById('poster-wall').innerHTML = `<div class="col-span-full flex flex-col items-center justify-center py-10 text-muted-foreground gap-2"><i data-lucide="alert-triangle" class="w-10 h-10 text-red-500 mb-2"></i><p class="text-lg font-semibold text-foreground">데이터를 불러오지 못했습니다.</p><p class="text-sm">${error.message}</p></div>`;
+                lucide.createIcons();
+            }
+        }
+
+        function processSheetData(rawData) {
+            groupedMockData.forEach(g => g.items = []);
+            for (let i = rawData.length - 1; i >= 0; i--) {
+                const row = rawData[i];
+                const group = groupedMockData.find(g => g.category === row.Category);
+                if (group) {
+                    let dateStr = row.Date;
+                    if (typeof dateStr === 'string' && dateStr.length >= 10) {
+                         if (dateStr.includes('T')) dateStr = dateStr.split('T')[0];
+                         dateStr = dateStr.substring(5, 10);
+                    }
+                    group.items.push({
+                        title: row.Title,
+                        date: dateStr || '',
+                        author: row.Author || '익명',
+                        tags: row.Tags ? row.Tags.split(',').map(t => t.trim()).filter(t => t) : [],
+                        link: row.Link || '#',
+                        comment: row.Comment || '',
+                    });
+                }
+            }
+            renderPosters();
+        }
+
+        function renderPosters() {
+            const wall = document.getElementById('poster-wall'); wall.innerHTML = '';
+            groupedMockData.forEach(group => {
+                let itemsHTML = '';
+                group.items.slice(0, 5).forEach(item => {
+                     const isNew = group.items.indexOf(item) === 0; 
+                     const badge = isNew ? `<span class="ml-2 inline-flex items-center rounded-full border border-red-500/30 bg-red-500/10 px-1.5 py-0.5 text-[10px] font-medium text-red-600 dark:text-red-400">NEW</span>` : '';
+                    let tagsHTML = (item.tags && item.tags.length > 0) ? `<div class="flex flex-wrap gap-1 mb-2">${item.tags.map(tag => `<span class="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded-sm">#${tag}</span>`).join('')}</div>` : '';
+                    const clickAction = item.link && item.link !== '#' ? `onclick="window.open('${item.link}', '_blank')"` : '';
+                    itemsHTML += `<div class="flex flex-col py-3 px-2 -mx-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-all cursor-pointer group" ${clickAction}><div class="mb-1"><span class="text-sm font-medium leading-snug group-hover:underline underline-offset-4">${item.title}${badge}</span></div>${tagsHTML}<div class="flex justify-between items-center text-xs text-muted-foreground mt-auto"><span class="flex items-center gap-1 opacity-80"><i data-lucide="user" class="w-3 h-3"></i> ${item.author}</span><span class="opacity-80">${item.date}</span></div></div>`;
+                });
+                if (group.items.length === 0) itemsHTML = `<div class="py-4 text-center text-sm text-muted-foreground">아직 공유된 내용이 없습니다.</div>`;
+                wall.innerHTML += `<div class="rounded-xl border bg-card text-card-foreground shadow-sm flex flex-col h-full"><div class="flex flex-col space-y-1.5 p-6 pb-3"><h3 class="text-lg font-semibold flex items-center gap-2"><i data-lucide="${group.icon}" class="w-5 h-5 text-primary"></i>${group.posterTitle}</h3><p class="text-sm text-muted-foreground">${group.description}</p></div><div class="p-6 pt-0 flex-1"><div class="flex flex-col divide-y divide-border">${itemsHTML}</div></div><div class="flex items-center p-6 pt-0 gap-3 mt-auto"><button onclick="openBoard('${group.category}')" class="flex-1 inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 transition-all active:scale-95">View All</button><button onclick="openModal('${group.category}')" class="flex-1 inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 py-2 transition-all active:scale-95 gap-1"><i data-lucide="pen-line" class="w-3.5 h-3.5"></i> Write</button></div></div>`;
+            });
+            lucide.createIcons();
+        }
+
+        function initVisitorCounter() { const today = new Date().toISOString().split('T')[0]; let lastVisitDate = localStorage.getItem('last_visit_date'); let todayCount = parseInt(localStorage.getItem('visit_today') || '0'); let totalCount = parseInt(localStorage.getItem('visit_total') || '0'); if (lastVisitDate !== today) { todayCount = 0; localStorage.setItem('last_visit_date', today); } if (!sessionStorage.getItem('visited_this_session')) { todayCount++; totalCount++; localStorage.setItem('visit_today', todayCount); localStorage.setItem('visit_total', totalCount); sessionStorage.setItem('visited_this_session', 'true'); } animateCounter('visit-today', todayCount); animateCounter('visit-total', totalCount); }
+        function animateCounter(e,t){const n=document.getElementById(e);let a=0;const o=1e3,r=performance.now();function c(e){const i=e-r,s=Math.min(i/o,1),l=Math.floor(a+(t-a)*(1-Math.pow(1-s,3)));n.textContent=l.toLocaleString(),s<1?requestAnimationFrame(c):n.textContent=t.toLocaleString()}requestAnimationFrame(c)}
+        const CORRECT_PASSWORD="6193",gate=document.getElementById("access-gate"),gatePw=document.getElementById("gate-password"),gateErr=document.getElementById("gate-error");if("true"===sessionStorage.getItem("insight_wall_auth")){gate.style.display="none",document.body.classList.remove("overflow-hidden")}function unlock(){gatePw.value===CORRECT_PASSWORD?(sessionStorage.setItem("insight_wall_auth","true"),gate.style.opacity="0",setTimeout(()=>{gate.style.display="none",document.body.classList.remove("overflow-hidden")},500)):(gateErr.classList.remove("hidden"),gatePw.classList.add("animate-shake","border-red-500","ring-red-500"),setTimeout(()=>gatePw.classList.remove("animate-shake","border-red-500","ring-red-500"),500),gatePw.value="",gatePw.focus())}document.getElementById("gate-submit").addEventListener("click",unlock),gatePw.addEventListener("keypress",e=>{"Enter"===e.key&&unlock()}),document.getElementById("theme-toggle").addEventListener("click",()=>{const e=document.documentElement.classList.toggle("dark");localStorage.setItem("theme",e?"dark":"light")});
+        let currentCategory="";const mainDash=document.getElementById("main-dashboard"),boardView=document.getElementById("board-view"),boardTitle=document.getElementById("board-title"),boardDesc=document.getElementById("board-desc"),boardList=document.getElementById("board-list"),boardWriteBtn=document.getElementById("board-write-btn"),boardSearch=document.getElementById("board-search"),noResult=document.getElementById("no-result");function openBoard(e){currentCategory=e;const t=groupedMockData.find(t=>t.category===e);t&&(mainDash.classList.add("hidden"),boardView.classList.remove("hidden"),window.scrollTo(0,0),boardTitle.innerHTML=`<i data-lucide="${t.icon}" class="w-8 h-8 text-primary"></i> ${t.posterTitle}`,boardDesc.textContent=t.description,boardWriteBtn.onclick=()=>openModal(e),boardSearch.value="",renderBoardList(t.items),lucide.createIcons())}function closeBoard(){boardView.classList.add("hidden"),mainDash.classList.remove("hidden")}function renderBoardList(e){boardList.innerHTML="",0===e.length?noResult.classList.remove("hidden"):(noResult.classList.add("hidden"),e.forEach(e=>{const t=e.isNew?'<span class="ml-2 inline-flex items-center rounded-full border border-red-500/30 bg-red-500/10 px-1.5 py-0.5 text-[10px] font-medium text-red-600 dark:text-red-400">NEW</span>':"",n=e.tags&&e.tags.length>0?`<div class="flex flex-wrap gap-1 mt-1">${e.tags.map(e=>`<span class="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded-sm">#${e}</span>`).join("")}</div>`:"";boardList.innerHTML+=`<tr class="hover:bg-muted/50 transition-colors cursor-pointer" onclick="window.open('${e.link}', '_blank')"><td class="p-4 align-top"><div class="font-medium hover:underline underline-offset-4">${e.title}${t}</div>${n}</td><td class="p-4 text-muted-foreground align-top whitespace-nowrap"><div class="flex items-center gap-1"><i data-lucide="user" class="w-3 h-3"></i> ${e.author||"익명"}</div></td><td class="p-4 text-right text-muted-foreground align-top whitespace-nowrap">${e.date}</td></tr>`})),lucide.createIcons()}boardSearch.addEventListener("input",e=>{const t=e.target.value.toLowerCase(),n=groupedMockData.find(e=>e.category===currentCategory);if(!n)return;const a=n.items.filter(e=>(e.title&&e.title.toLowerCase().includes(t))||(e.author&&e.author.toLowerCase().includes(t))||(e.tags&&e.tags.some(e=>e.toLowerCase().includes(t))));renderBoardList(a)});const modal=document.getElementById("write-modal"),catSel=document.getElementById("modal-category");function openModal(e){catSel.value=e,modal.classList.remove("hidden"),modal.classList.add("flex")}function closeModal(){modal.classList.add("hidden"),modal.classList.remove("flex"),["modal-title","modal-tags","modal-link","modal-comment","modal-author"].forEach(e=>document.getElementById(e).value="")}document.getElementById("modal-close").addEventListener("click",closeModal),modal.addEventListener("click",e=>{e.target===modal&&closeModal()});
+        
+        // [변경] '공유하기' 버튼 클릭 시 실제 데이터 전송
+        document.getElementById('modal-submit').addEventListener('click', async () => {
+            const submitBtn = document.getElementById('modal-submit');
+            const originalBtnText = submitBtn.innerText;
+            const category = document.getElementById('modal-category').value;
+            const title = document.getElementById('modal-title').value;
+            const tags = document.getElementById('modal-tags').value;
+            const link = document.getElementById('modal-link').value;
+            const comment = document.getElementById('modal-comment').value;
+            const author = document.getElementById('modal-author').value;
+
+            if (!title) { alert('제목을 입력해주세요.'); document.getElementById('modal-title').focus(); return; }
+
+            submitBtn.disabled = true;
+            submitBtn.innerText = '저장 중...';
+
+            const payload = { category, title, tags, link, comment, author };
+
+            try {
+                await fetch(GOOGLE_SHEET_API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    cache: 'no-cache',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify(payload)
+                });
+                alert('성공적으로 공유되었습니다!');
+                closeModal();
+                fetchData(); 
+            } catch (error) {
+                console.error('Error submitting data:', error);
+                alert('저장에 실패했습니다. 잠시 후 다시 시도해주세요.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = originalBtnText;
+            }
+        });
+
+        initVisitorCounter();
+        fetchData(); 
+    </script>
+</body>
+</html>
