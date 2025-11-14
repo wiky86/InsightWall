@@ -133,7 +133,7 @@
             <div class="relative mb-4 max-w-md">
                 <i data-lucide="search"
                     class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"></i>
-                <input id="board-search" type="text" placeholder="제목, 해시태G그, 작성자 검색..."
+                <input id="board-search" type="text" placeholder="제목, 해시태그, 작성자 검색..."
                     class="flex h-10 w-full rounded-md border border-input bg-background pl-10 pr-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
             </div>
             <div class="rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden">
@@ -207,7 +207,7 @@
         // [필수] 본인의 웹 앱 URL
         const GOOGLE_SHEET_API_URL = "https://script.google.com/macros/s/AKfycbz0gBzAsoQAFl96ZBk6m_hXCHysKr4dksflpXCuvnPD5VK1qiuXdGBUMYUqdGIOVEbJ/exec";
 
-        // [수정] '밈 게시판' 추가됨
+        // '밈 게시판' 추가됨
         let groupedMockData = [
             { category: 'youtube', posterTitle: 'Trending Videos', description: '최신 업계 관련 유튜브 영상', icon: 'youtube', items: [] },
             { category: 'news', posterTitle: 'Industry News', description: '놓치면 안 될 주요 뉴스', icon: 'newspaper', items: [] },
@@ -216,7 +216,7 @@
             { category: 'meme', posterTitle: '😂 밈 저장소', description: '재미있는 밈, 유머 자료 공유', icon: 'smile', items: [] }
         ];
 
-        // [수정] 데이터 가져오기 (action=getData 추가)
+        // 데이터 가져오기 (action=getData 추가)
         async function fetchData() {
             if (GOOGLE_SHEET_API_URL.includes("여기에_웹앱_URL을_붙여넣으세요")) {
                 document.getElementById('poster-wall').innerHTML = '<div class="col-span-full text-center py-10 text-red-500 font-bold">API URL이 설정되지 않았습니다. 코드를 확인해주세요.</div>';
@@ -275,7 +275,7 @@
             lucide.createIcons();
         }
 
-        // [수정] 통계 함수 (서버 호출)
+        // 통계 함수 (서버 호출)
         async function initVisitorCounter() {
             try {
                 const response = await fetch(GOOGLE_SHEET_API_URL + "?action=recordVisit");
@@ -295,20 +295,23 @@
         }
         function animateCounter(e, t) { const n = document.getElementById(e); let a = 0; const o = 1e3, r = performance.now(); function c(e) { const i = e - r, s = Math.min(i / o, 1), l = Math.floor(a + (t - a) * (1 - Math.pow(1 - s, 3))); n.textContent = l.toLocaleString(), s < 1 ? requestAnimationFrame(c) : n.textContent = t.toLocaleString() } requestAnimationFrame(c) }
         
-        // --- [수정] 비밀번호 로직 (서버 인증) ---
-        // 1. 전역 변수 선언 (gate, gatePw, gateErr)
+        // --- [수정] 다크모드 리스너 추가 ---
+        document.getElementById('theme-toggle').addEventListener('click', () => {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        });
+
+        // --- 비밀번호 로직 (서버 인증) ---
         const gate = document.getElementById("access-gate"), 
             gatePw = document.getElementById("gate-password"), 
             gateErr = document.getElementById("gate-error"),
             gateSubmit = document.getElementById("gate-submit");
 
-        // 2. 세션 확인
         if ("true" === sessionStorage.getItem("insight_wall_auth")) { 
             gate.style.display = "none";
             document.body.classList.remove("overflow-hidden");
         }
 
-        // 3. 새로운 unlock 함수 (서버에 비밀번호 문의)
         async function unlock() {
             const pass = gatePw.value;
             if (!pass) {
@@ -347,7 +350,6 @@
             }
         }
         
-        // 4. 이벤트 리스너 연결
         document.getElementById("gate-submit").addEventListener("click", unlock);
         gatePw.addEventListener("keypress", e => { "Enter" === e.key && unlock() });
         // --- 비밀번호 로직 끝 ---
