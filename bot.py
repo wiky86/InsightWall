@@ -1,59 +1,64 @@
 import requests
 import feedparser
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 
-# [설정] 본인의 GAS 웹 앱 URL을 여기에 넣으세요!
+# [중요] 본인의 GAS 웹 앱 URL 확인!
 GAS_APP_URL = "https://script.google.com/macros/s/AKfycbz0gBzAsoQAFl96ZBk6m_hXCHysKr4dksflpXCuvnPD5VK1qiuXdGBUMYUqdGIOVEbJ/exec"
 
-# 수집할 RSS 피드 목록
+# 한국 AI/IT 뉴스 소스 (엄선함)
 RSS_FEEDS = [
     {
-        "source": "Google AI",
-        "url": "http://googleaiblog.blogspot.com/atom.xml",
-        "tag": "Google, AI, Tech"
+        "source": "Google News (AI)",
+        "url": "https://news.google.com/rss/search?q=인공지능+when:1d&hl=ko&gl=KR&ceid=KR:ko",
+        "tag": "News, AI"
     },
     {
-        "source": "OpenAI",
-        "url": "https://openai.com/blog/rss.xml",
-        "tag": "OpenAI, LLM, GPT"
+        "source": "AI Times",
+        "url": "http://www.aitimes.com/rss/all.xml",
+        "tag": "AI, Industry"
     },
     {
-        "source": "MIT Tech Review",
-        "url": "https://www.technologyreview.com/feed/",
-        "tag": "Trend, News"
+        "source": "GeekNews",
+        "url": "http://feeds.feedburner.com/geeknews-feed",
+        "tag": "Tech, Dev"
     }
 ]
 
 def fetch_and_post():
     headers = {'Content-Type': 'application/json'}
-    
+    print(f"🚀 [NewsBot-KR] 한국 뉴스 수집 시작...")
+
     for feed_info in RSS_FEEDS:
         print(f"Checking {feed_info['source']}...")
-        feed = feedparser.parse(feed_info['url'])
-        
-        # 각 피드에서 최신 글 1개만 가져오기 (중복 방지 로직은 GAS나 여기서 날짜 비교로 처리 가능)
-        if feed.entries:
-            entry = feed.entries[0] # 가장 최신 글
+        try:
+            feed = feedparser.parse(feed_info['url'])
             
-            # 오늘 올라온 글인지 확인 (선택 사항: 여기서는 일단 무조건 보냅니다)
-            # 실제 운영 시에는 '어제 이후 작성된 글'만 필터링하는 로직 추가 권장
-            
-            payload = {
-                "category": "news", # 'news' 카테고리로 자동 분류
-                "title": entry.title,
-                "link": entry.link,
-                "tags": feed_info['tag'],
-                "comment": f"[{feed_info['source']}] 자동 수집된 최신 아티클입니다.",
-                "author": "NewsBot 🤖"
-            }
-            
-            # GAS로 데이터 전송 (POST)
-            try:
-                response = requests.post(GAS_APP_URL, data=json.dumps(payload), headers=headers)
-                print(f"Sent: {entry.title} -> {response.text}")
-            except Exception as e:
-                print(f"Error sending data: {e}")
+            # 각 소스에서 최신 글 2개씩만 가져오기 (도배 방지)
+            for entry in feed.entries[:2]:
+                
+                # [필터링] 오늘/어제 글만 가져오기 (너무 옛날 글 제외)
+                # published_parsed가 있는 경우만 체크
+                if hasattr(entry, 'published_parsed'):
+                    pub_date = datetime(*entry.published_parsed[:6])
+                    if datetime.now() - pub_date > timedelta(hours=48):
+                        continue # 48시간 지난 뉴스는 패스
+
+                payload = {
+                    "category": "news", 
+                    "title": entry.title,
+                    "link": entry.link,
+                    "tags": feed_info['tag'],
+                    "comment": f"[{feed_info['source']}] 자동 수집 뉴스",
+                    "author": "NewsBot 🤖"
+                }
+                
+                # GAS로 전송
+                response = requests.post(GAS_APP_URL, json=payload)
+                print(f"✅ Sent: {entry.title}")
+                
+        except Exception as e:
+            print(f"❌ Error: {e}")
 
 if __name__ == "__main__":
     fetch_and_post()

@@ -12,35 +12,96 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         :root {
-            --background: 0 0% 100%; --foreground: 240 10% 3.9%;
-            --card: 0 0% 100%; --card-foreground: 240 10% 3.9%;
-            --popover: 0 0% 100%; --popover-foreground: 240 10% 3.9%;
-            --primary: 240 5.9% 10%; --primary-foreground: 0 0% 98%;
-            --secondary: 240 4.8% 95.9%; --secondary-foreground: 240 5.9% 10%;
-            --muted: 240 4.8% 95.9%; --muted-foreground: 240 3.8% 46.1%;
-            --accent: 240 4.8% 95.9%; --accent-foreground: 240 5.9% 10%;
-            --destructive: 0 84.2% 60.2%; --destructive-foreground: 0 0% 98%;
-            --border: 240 5.9% 90%; --input: 240 5.9% 90%;
-            --ring: 240 5.9% 10%; --radius: 0.5rem;
+            --background: 0 0% 100%;
+            --foreground: 240 10% 3.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 240 10% 3.9%;
+            --popover: 0 0% 100%;
+            --popover-foreground: 240 10% 3.9%;
+            --primary: 240 5.9% 10%;
+            --primary-foreground: 0 0% 98%;
+            --secondary: 240 4.8% 95.9%;
+            --secondary-foreground: 240 5.9% 10%;
+            --muted: 240 4.8% 95.9%;
+            --muted-foreground: 240 3.8% 46.1%;
+            --accent: 240 4.8% 95.9%;
+            --accent-foreground: 240 5.9% 10%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 0 0% 98%;
+            --border: 240 5.9% 90%;
+            --input: 240 5.9% 90%;
+            --ring: 240 5.9% 10%;
+            --radius: 0.5rem;
         }
+
         .dark {
-            --background: 240 10% 3.9%; --foreground: 0 0% 98%;
-            --card: 240 10% 3.9%; --card-foreground: 0 0% 98%;
-            --popover: 240 10% 3.9%; --popover-foreground: 0 0% 98%;
-            --primary: 0 0% 98%; --primary-foreground: 240 5.9% 10%;
-            --secondary: 240 3.7% 15.9%; --secondary-foreground: 0 0% 98%;
-            --muted: 240 3.7% 15.9%; --muted-foreground: 240 5% 64.9%;
-            --accent: 240 3.7% 15.9%; --accent-foreground: 0 0% 98%;
-            --destructive: 0 62.8% 30.6%; --destructive-foreground: 0 0% 98%;
-            --border: 240 3.7% 15.9%; --input: 240 3.7% 15.9%;
+            --background: 240 10% 3.9%;
+            --foreground: 0 0% 98%;
+            --card: 240 10% 3.9%;
+            --card-foreground: 0 0% 98%;
+            --popover: 240 10% 3.9%;
+            --popover-foreground: 0 0% 98%;
+            --primary: 0 0% 98%;
+            --primary-foreground: 240 5.9% 10%;
+            --secondary: 240 3.7% 15.9%;
+            --secondary-foreground: 0 0% 98%;
+            --muted: 240 3.7% 15.9%;
+            --muted-foreground: 240 5% 64.9%;
+            --accent: 240 3.7% 15.9%;
+            --accent-foreground: 0 0% 98%;
+            --destructive: 0 62.8% 30.6%;
+            --destructive-foreground: 0 0% 98%;
+            --border: 240 3.7% 15.9%;
+            --input: 240 3.7% 15.9%;
             --ring: 240 4.9% 83.9%;
         }
-        body { font-family: 'Pretendard', sans-serif; background-color: hsl(var(--background)); color: hsl(var(--foreground)); transition: background-color 0.3s, color 0.3s; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); } 20%, 40%, 60%, 80% { transform: translateX(4px); } }
-        .animate-shake { animation: shake 0.5s cubic-bezier(.36, .07, .19, .97) both; }
-        .font-mono-nums { font-variant-numeric: tabular-nums; }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            10%,
+            30%,
+            50%,
+            70%,
+            90% {
+                transform: translateX(-4px);
+            }
+
+            20%,
+            40%,
+            60%,
+            80% {
+                transform: translateX(4px);
+            }
+        }
+
+        .animate-shake {
+            animation: shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
+        }
+
+        .font-mono-nums {
+            font-variant-numeric: tabular-nums;
+        }
     </style>
     <script>
         tailwind.config = {
@@ -234,43 +295,95 @@
             }
         }
 
+        // --- [수정됨] 데이터 처리 함수 ---
         function processSheetData(rawData) {
             groupedMockData.forEach(g => g.items = []);
+
+            // 최신순 정렬을 위해 역순 순회
             for (let i = rawData.length - 1; i >= 0; i--) {
                 const row = rawData[i];
-                const group = groupedMockData.find(g => g.category === row.Category);
-                if (group) {
-                    let dateStr = row.Date;
-                    if (typeof dateStr === 'string' && dateStr.length >= 10) {
-                        if (dateStr.includes('T')) dateStr = dateStr.split('T')[0];
-                        dateStr = dateStr.substring(5, 10);
-                    }
+
+                let targetCategory = 'share';
+                // 태그나 내용에 따른 자동 분류 로직 (필요시 수정)
+                if (row.tag && row.tag.toLowerCase().includes('news')) targetCategory = 'news';
+                if (row.tag && row.tag.includes('유튜브')) targetCategory = 'youtube';
+                if (row.tag && row.tag.includes('논문')) targetCategory = 'paper';
+                if (row.tag && row.tag.includes('밈')) targetCategory = 'meme';
+
+                const group = groupedMockData.find(g => g.category === targetCategory);
+
+                if (group && row.summary) {
+                    // [핵심] 날짜 계산 로직 추가
+                    const postDate = new Date(row.timestamp); // 작성 시간
+                    const now = new Date();
+                    // 차이(밀리초) / 1000 / 60 / 60 = 시간 차이
+                    const diffHours = (now - postDate) / (1000 * 60 * 60);
+
+                    // 24시간 이내면 true
+                    const isRecent = diffHours < 24;
+
                     group.items.push({
-                        title: row.Title,
-                        date: dateStr || '',
-                        author: row.Author || '익명',
-                        tags: row.Tags ? row.Tags.split(',').map(t => t.trim()).filter(t => t) : [],
-                        link: row.Link || '#',
-                        comment: row.Comment || '',
+                        title: row.summary,
+                        // 날짜 표시용 (YYYY-MM-DD)
+                        date: row.timestamp ? row.timestamp.substring(0, 10) : '',
+                        author: row.author || '익명',
+                        tags: row.tag ? row.tag.split(',').map(t => t.trim()) : [],
+                        link: row.url || '#',
+                        comment: row.opinion || '',
+                        isNew: isRecent // [수정] 이제 맨 위가 아니라 '시간' 기준임
                     });
                 }
             }
             renderPosters();
         }
 
+        // --- [수정됨] 렌더링 함수 ---
         function renderPosters() {
-            const wall = document.getElementById('poster-wall'); wall.innerHTML = '';
+            const wall = document.getElementById('poster-wall');
+            wall.innerHTML = '';
+
             groupedMockData.forEach(group => {
                 let itemsHTML = '';
+
+                // 최대 5개만 미리보기
                 group.items.slice(0, 5).forEach(item => {
-                    const isNew = group.items.indexOf(item) === 0;
-                    const badge = isNew ? `<span class="ml-2 inline-flex items-center rounded-full border border-red-500/30 bg-red-500/10 px-1.5 py-0.5 text-[10px] font-medium text-red-600 dark:text-red-400">NEW</span>` : '';
                     let tagsHTML = (item.tags && item.tags.length > 0) ? `<div class="flex flex-wrap gap-1 mb-2">${item.tags.map(tag => `<span class="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded-sm">#${tag}</span>`).join('')}</div>` : '';
                     const clickAction = item.link && item.link !== '#' ? `onclick="window.open('${item.link}', '_blank')"` : '';
-                    itemsHTML += `<div class="flex flex-col py-3 px-2 -mx-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-all cursor-pointer group" ${clickAction}><div class="mb-1"><span class="text-sm font-medium leading-snug group-hover:underline underline-offset-4">${item.title}${badge}</span></div>${tagsHTML}<div class="flex justify-between items-center text-xs text-muted-foreground mt-auto"><span class="flex items-center gap-1 opacity-80"><i data-lucide="user" class="w-3 h-3"></i> ${item.author}</span><span class="opacity-80">${item.date}</span></div></div>`;
+
+                    // [수정] item.isNew가 true일 때만 배지 표시
+                    const newBadge = item.isNew ? `<span class="ml-2 inline-flex items-center rounded-full border border-red-500/30 bg-red-500/10 px-1.5 py-0.5 text-[10px] font-medium text-red-600 dark:text-red-400 animate-pulse">NEW</span>` : '';
+
+                    itemsHTML += `
+                    <div class="flex flex-col py-3 px-2 -mx-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-all cursor-pointer group" ${clickAction}>
+                        <div class="mb-1">
+                            <span class="text-sm font-medium leading-snug group-hover:underline underline-offset-4">
+                                ${item.title}
+                            </span>
+                            ${newBadge} </div>
+                        ${tagsHTML}
+                        <div class="flex justify-between items-center text-xs text-muted-foreground mt-auto">
+                            <span class="flex items-center gap-1 opacity-80"><i data-lucide="user" class="w-3 h-3"></i> ${item.author}</span>
+                            <span class="opacity-80">${item.date}</span>
+                        </div>
+                    </div>`;
                 });
+
                 if (group.items.length === 0) itemsHTML = `<div class="py-4 text-center text-sm text-muted-foreground">아직 공유된 내용이 없습니다.</div>`;
-                wall.innerHTML += `<div class="rounded-xl border bg-card text-card-foreground shadow-sm flex flex-col h-full"><div class="flex flex-col space-y-1.5 p-6 pb-3"><h3 class="text-lg font-semibold flex items-center gap-2"><i data-lucide="${group.icon}" class="w-5 h-5 text-primary"></i>${group.posterTitle}</h3><p class="text-sm text-muted-foreground">${group.description}</p></div><div class="p-6 pt-0 flex-1"><div class="flex flex-col divide-y divide-border">${itemsHTML}</div></div><div class="flex items-center p-6 pt-0 gap-3 mt-auto"><button onclick="openBoard('${group.category}')" class="flex-1 inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 transition-all active:scale-95">View All</button><button onclick="openModal('${group.category}')" class="flex-1 inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 py-2 transition-all active:scale-95 gap-1"><i data-lucide="pen-line" class="w-3.5 h-3.5"></i> Write</button></div></div>`;
+
+                wall.innerHTML += `
+                <div class="rounded-xl border bg-card text-card-foreground shadow-sm flex flex-col h-full">
+                    <div class="flex flex-col space-y-1.5 p-6 pb-3">
+                        <h3 class="text-lg font-semibold flex items-center gap-2"><i data-lucide="${group.icon}" class="w-5 h-5 text-primary"></i>${group.posterTitle}</h3>
+                        <p class="text-sm text-muted-foreground">${group.description}</p>
+                    </div>
+                    <div class="p-6 pt-0 flex-1">
+                        <div class="flex flex-col divide-y divide-border">${itemsHTML}</div>
+                    </div>
+                    <div class="flex items-center p-6 pt-0 gap-3 mt-auto">
+                        <button onclick="openBoard('${group.category}')" class="flex-1 inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 transition-all active:scale-95">View All</button>
+                        <button onclick="openModal('${group.category}')" class="flex-1 inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 py-2 transition-all active:scale-95 gap-1"><i data-lucide="pen-line" class="w-3.5 h-3.5"></i> Write</button>
+                    </div>
+                </div>`;
             });
             lucide.createIcons();
         }
@@ -294,7 +407,7 @@
             }
         }
         function animateCounter(e, t) { const n = document.getElementById(e); let a = 0; const o = 1e3, r = performance.now(); function c(e) { const i = e - r, s = Math.min(i / o, 1), l = Math.floor(a + (t - a) * (1 - Math.pow(1 - s, 3))); n.textContent = l.toLocaleString(), s < 1 ? requestAnimationFrame(c) : n.textContent = t.toLocaleString() } requestAnimationFrame(c) }
-        
+
         // --- [수정] 다크모드 리스너 추가 ---
         document.getElementById('theme-toggle').addEventListener('click', () => {
             const isDark = document.documentElement.classList.toggle('dark');
@@ -302,12 +415,12 @@
         });
 
         // --- 비밀번호 로직 (서버 인증) ---
-        const gate = document.getElementById("access-gate"), 
-            gatePw = document.getElementById("gate-password"), 
+        const gate = document.getElementById("access-gate"),
+            gatePw = document.getElementById("gate-password"),
             gateErr = document.getElementById("gate-error"),
             gateSubmit = document.getElementById("gate-submit");
 
-        if ("true" === sessionStorage.getItem("insight_wall_auth")) { 
+        if ("true" === sessionStorage.getItem("insight_wall_auth")) {
             gate.style.display = "none";
             document.body.classList.remove("overflow-hidden");
         }
@@ -331,7 +444,7 @@
                 if (data.result === 'success') {
                     sessionStorage.setItem("insight_wall_auth", "true");
                     gate.style.opacity = "0";
-                    setTimeout(() => { 
+                    setTimeout(() => {
                         gate.style.display = "none";
                         document.body.classList.remove("overflow-hidden");
                     }, 500);
@@ -349,7 +462,7 @@
                 gateSubmit.innerText = '입장하기';
             }
         }
-        
+
         document.getElementById("gate-submit").addEventListener("click", unlock);
         gatePw.addEventListener("keypress", e => { "Enter" === e.key && unlock() });
         // --- 비밀번호 로직 끝 ---
