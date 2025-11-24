@@ -3,10 +3,9 @@ import feedparser
 import json
 from datetime import datetime, timedelta
 
-# [중요] 본인의 GAS 웹 앱 URL 확인!
+# [중요] 본인의 GAS 웹 앱 URL 확인
 GAS_APP_URL = "https://script.google.com/macros/s/AKfycbz0gBzAsoQAFl96ZBk6m_hXCHysKr4dksflpXCuvnPD5VK1qiuXdGBUMYUqdGIOVEbJ/exec"
 
-# 한국 AI/IT 뉴스 소스 (엄선함)
 RSS_FEEDS = [
     {
         "source": "Google News (AI)",
@@ -26,36 +25,36 @@ RSS_FEEDS = [
 ]
 
 def fetch_and_post():
-    headers = {'Content-Type': 'application/json'}
     print(f"🚀 [NewsBot-KR] 한국 뉴스 수집 시작...")
+    
+    # 헤더 설정 (GAS가 JSON을 잘 받도록)
+    headers = {'Content-Type': 'application/json'}
 
     for feed_info in RSS_FEEDS:
         print(f"Checking {feed_info['source']}...")
         try:
             feed = feedparser.parse(feed_info['url'])
             
-            # 각 소스에서 최신 글 2개씩만 가져오기 (도배 방지)
             for entry in feed.entries[:2]:
-                
-                # [필터링] 오늘/어제 글만 가져오기 (너무 옛날 글 제외)
-                # published_parsed가 있는 경우만 체크
-                if hasattr(entry, 'published_parsed'):
+                if hasattr(entry, 'published_parsed') and entry.published_parsed:
                     pub_date = datetime(*entry.published_parsed[:6])
                     if datetime.now() - pub_date > timedelta(hours=48):
-                        continue # 48시간 지난 뉴스는 패스
+                        continue
 
+                # [수정 핵심] 시트 헤더(Row 1)와 대소문자까지 정확히 일치시켜야 함
                 payload = {
-                    "category": "news", 
-                    "title": entry.title,
-                    "link": entry.link,
-                    "tags": feed_info['tag'],
-                    "comment": f"[{feed_info['source']}] 자동 수집 뉴스",
-                    "author": "NewsBot 🤖"
+                    "Date": datetime.now().strftime("%Y-%m-%d"), # 날짜 직접 생성
+                    "Category": "news",  # 카테고리 명시
+                    "Title": entry.title,
+                    "Link": entry.link,
+                    "Comment": f"[{feed_info['source']}] 자동 수집",
+                    "Author": "NewsBot 🤖",
+                    "Tags": feed_info['tag']
                 }
                 
                 # GAS로 전송
-                response = requests.post(GAS_APP_URL, json=payload)
-                print(f"✅ Sent: {entry.title}")
+                response = requests.post(GAS_APP_URL, json=payload, headers=headers)
+                print(f"✅ Sent: {entry.title} -> Code: {response.status_code}")
                 
         except Exception as e:
             print(f"❌ Error: {e}")

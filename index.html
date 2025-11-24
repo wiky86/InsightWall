@@ -296,42 +296,49 @@
         }
 
         function processSheetData(rawData) {
-            // 1. 기존 데이터 초기화
             groupedMockData.forEach(g => g.items = []);
 
-            // 2. CSV 데이터를 역순(최신순)으로 검사
             for (let i = rawData.length - 1; i >= 0; i--) {
                 const row = rawData[i];
 
-                // [수정] 봇(title)과 사람(summary)이 쓰는 이름표를 모두 확인!
-                // 대소문자 무시하고 데이터가 있는 쪽을 선택합니다.
-                const title = row.title || row.Title || row.summary || row.Summary;
-                const link = row.link || row.Link || row.url || row.URL;
-                const comment = row.comment || row.Comment || row.opinion || row.Opinion;
-                const author = row.author || row.Author || '익명';
-                const dateStr = row.timestamp || row.Timestamp || row.Date || '';
-                // 태그는 봇이 'tags', 사람은 'tag'로 쓸 수 있음
-                const tagStr = row.tags || row.Tags || row.tag || row.Tag || '';
+                // 1. 데이터 가져오기 (시트 헤더 이름 매칭)
+                // 시트 헤더가 'Date', 'Category' 처럼 대문자로 시작하므로 대문자 키를 우선 확인
+                const title = row.Title || row.title || row.summary;
+                const link = row.Link || row.link || row.url;
+                const comment = row.Comment || row.comment || row.opinion;
+                const author = row.Author || row.author || '익명';
+                const dateStr = row.Date || row.date || row.timestamp || '';
+                const tags = row.Tags || row.tags || row.tag || '';
 
-                // 제목이 없으면 빈 줄로 간주하고 패스
+                // [중요] 시트에 적힌 'Category' 값을 최우선으로 사용!
+                // 값이 없으면 태그나 제목으로 추측(fallback)
+                let rawCategory = row.Category || row.category || '';
+                let targetCategory = 'share'; // 기본값
+
+                if (rawCategory) {
+                    // 시트에 카테고리가 있으면 그대로 씀 (소문자로 변환하여 비교)
+                    targetCategory = rawCategory.toLowerCase();
+                } else {
+                    // 시트에 카테고리가 비어있을 때만 추측 로직 가동
+                    const combined = (tags + " " + title).toLowerCase();
+                    if (combined.includes('news') || combined.includes('뉴스')) targetCategory = 'news';
+                    else if (combined.includes('youtube') || combined.includes('유튜브')) targetCategory = 'youtube';
+                    else if (combined.includes('paper') || combined.includes('논문')) targetCategory = 'paper';
+                    else if (combined.includes('meme') || combined.includes('밈')) targetCategory = 'meme';
+                }
+
+                // 제목이 없으면 스킵
                 if (!title) continue;
-
-                // 카테고리 자동 분류 (태그나 내용 기반)
-                let targetCategory = 'share';
-                const combinedText = (tagStr + " " + title).toLowerCase();
-
-                if (combinedText.includes('news') || combinedText.includes('뉴스')) targetCategory = 'news';
-                else if (combinedText.includes('youtube') || combinedText.includes('유튜브')) targetCategory = 'youtube';
-                else if (combinedText.includes('paper') || combinedText.includes('논문')) targetCategory = 'paper';
-                else if (combinedText.includes('meme') || combinedText.includes('밈')) targetCategory = 'meme';
 
                 const group = groupedMockData.find(g => g.category === targetCategory);
 
                 if (group) {
-                    // 날짜 계산 (NEW 배지용)
+                    // 날짜 계산 (NEW 배지)
                     let isRecent = false;
                     if (dateStr) {
-                        const postDate = new Date(dateStr);
+                        // 2025. 11. 11 같은 한국식 날짜도 처리하기 위해 문자열 정리
+                        const cleanDate = dateStr.replace(/\./g, '-').replace(' 오후', '').replace(' 오전', '');
+                        const postDate = new Date(cleanDate);
                         const now = new Date();
                         const diffHours = (now - postDate) / (1000 * 60 * 60);
                         if (diffHours < 24) isRecent = true;
@@ -339,9 +346,9 @@
 
                     group.items.push({
                         title: title,
-                        date: dateStr ? dateStr.substring(0, 10) : '',
+                        date: dateStr,
                         author: author,
-                        tags: tagStr ? tagStr.split(',').map(t => t.trim()) : [],
+                        tags: tags ? tags.split(',').map(t => t.trim()) : [],
                         link: link || '#',
                         comment: comment || '',
                         isNew: isRecent
