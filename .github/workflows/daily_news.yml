@@ -1,0 +1,27 @@
+name: Daily AI News Crawler
+
+on:
+  schedule:
+    # 매일 한국 시간 오전 8시 30분 실행 (UTC 23:30)
+    - cron: '30 23 * * *'
+  workflow_dispatch: # 수동 실행 버튼 추가 (테스트용)
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+
+    - name: Run Crawler
+      run: python bot.py
