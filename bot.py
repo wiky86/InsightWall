@@ -8,27 +8,16 @@ from datetime import datetime, timedelta
 GAS_API_URL = "https://script.google.com/macros/s/AKfycbz0gBzAsoQAFl96ZBk6m_hXCHysKr4dksflpXCuvnPD5VK1qiuXdGBUMYUqdGIOVEbJ/exec"
 
 RSS_FEEDS = [
-    {
-        "source": "Google News (AI)",
-        "url": "https://news.google.com/rss/search?q=인공지능+when:1d&hl=ko&gl=KR&ceid=KR:ko",
-        "tag": "News, AI"
-    },
-    {
-        "source": "AI Times",
-        "url": "http://www.aitimes.com/rss/all.xml",
-        "tag": "AI, Industry"
-    },
-    {
-        "source": "GeekNews",
-        "url": "http://feeds.feedburner.com/geeknews-feed",
-        "tag": "Tech, Dev"
-    }
+    {'url': 'https://news.google.com/rss/search?q=AI+Artificial+Intelligence&hl=ko&gl=KR&ceid=KR:ko', 'source': 'Google News (AI)', 'tag': 'AI, Tech', 'category': 'news'},
+    {'url': 'http://www.aitimes.com/rss/all.xml', 'source': 'AI Times', 'tag': 'AI, Industry', 'category': 'news'},
+    {'url': 'https://geeknews.geeknews.io/rss', 'source': 'GeekNews', 'tag': 'Tech, Dev', 'category': 'news'},
+    {'url': 'https://www.youtube.com/feeds/videos.xml?channel_id=UCQNE2JmbasNYbjGAcuBiRRg', 'source': '조코딩 JoCoding', 'tag': 'AI, Dev, Video', 'category': 'youtube'},
+    {'url': 'https://news.google.com/rss/search?q=AI+논문+OR+AI+보고서+OR+AI+트렌드&hl=ko&gl=KR&ceid=KR:ko', 'source': 'Google News (Paper/Report)', 'tag': 'AI, Paper, Report', 'category': 'paper'},
 ]
 
 def fetch_and_post():
-    print(f"🚀 [NewsBot-KR] GAS로 뉴스 전송 시작...")
+    print(f"🚀 [NewsBot-KR] GAS로 데이터 전송 시작...")
     
-    # GAS 웹앱은 보통 CORS 문제나 리다이렉트 때문에 text/plain으로 보내는 게 안전함
     headers = {'Content-Type': 'text/plain; charset=utf-8'}
 
     for feed_info in RSS_FEEDS:
@@ -43,25 +32,24 @@ def fetch_and_post():
                     if datetime.now() - pub_date > timedelta(hours=48):
                         continue
 
-                # [GAS 형식] index.html의 modal-submit과 동일한 키 사용
+                # [GAS 형식] doPost가 기대하는 JSON 구조
                 payload = {
-                    "category": "news",
+                    "category": feed_info.get('category', 'news'),
                     "title": entry.title,
                     "link": entry.link,
-                    "comment": f"[{feed_info['source']}] 자동 수집됨",
+                    "comment": f"[{feed_info['source']}] 자동 수집",
                     "author": "NewsBot 🤖",
                     "tags": feed_info['tag']
-                    # Date는 GAS 스크립트 내부에서 자동 생성됨 (보통)
                 }
                 
                 # GAS로 전송 (POST)
-                # GAS는 리다이렉트를 반환하므로 allow_redirects=True (기본값)
+                # json=payload 대신 data=json.dumps(payload) 사용 (text/plain 처리)
                 response = requests.post(GAS_API_URL, data=json.dumps(payload), headers=headers)
                 
-                if response.status_code == 200 or response.status_code == 302:
+                if response.status_code == 200 or response.status_code == 201:
                     print(f"✅ Sent: {entry.title}")
                 else:
-                    print(f"❌ Fail ({response.status_code}): {response.text[:100]}")
+                    print(f"❌ Fail: {response.text}")
                 
         except Exception as e:
             print(f"❌ Error: {e}")
