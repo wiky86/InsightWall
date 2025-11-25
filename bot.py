@@ -3,9 +3,9 @@ import feedparser
 import json
 from datetime import datetime, timedelta
 
-# [수정] 멍청한 GAS 대신 똑똑한 SheetDB 주소 사용
-# 사용자님이 주신 SheetDB API URL입니다.
-SHEET_DB_URL = "https://sheetdb.io/api/v1/d11klu94k8ypq"
+# [수정] SheetDB 제거 -> GAS API 사용
+# index.html에 있는 URL과 동일하게 맞춤
+GAS_API_URL = "https://script.google.com/macros/s/AKfycbz0gBzAsoQAFl96ZBk6m_hXCHysKr4dksflpXCuvnPD5VK1qiuXdGBUMYUqdGIOVEbJ/exec"
 
 RSS_FEEDS = [
     {
@@ -26,9 +26,10 @@ RSS_FEEDS = [
 ]
 
 def fetch_and_post():
-    print(f"🚀 [NewsBot-KR] SheetDB로 뉴스 전송 시작...")
+    print(f"🚀 [NewsBot-KR] GAS로 뉴스 전송 시작...")
     
-    headers = {'Content-Type': 'application/json'}
+    # GAS 웹앱은 보통 CORS 문제나 리다이렉트 때문에 text/plain으로 보내는 게 안전함
+    headers = {'Content-Type': 'text/plain; charset=utf-8'}
 
     for feed_info in RSS_FEEDS:
         print(f"Checking {feed_info['source']}...")
@@ -42,29 +43,25 @@ def fetch_and_post():
                     if datetime.now() - pub_date > timedelta(hours=48):
                         continue
 
-                # [SheetDB 형식] "data" 키 안에 배열로 넣거나, 그냥 객체로 보내도 됨
-                # 시트의 헤더 이름(Date, Category, Title...)과 정확히 일치해야 합니다.
+                # [GAS 형식] index.html의 modal-submit과 동일한 키 사용
                 payload = {
-                    "data": [
-                        {
-                            "Date": datetime.now().strftime("%Y-%m-%d"),
-                            "Category": "news",
-                            "Title": entry.title,
-                            "Link": entry.link,
-                            "Comment": f"[{feed_info['source']}] 자동 수집",
-                            "Author": "NewsBot 🤖",
-                            "Tags": feed_info['tag']
-                        }
-                    ]
+                    "category": "news",
+                    "title": entry.title,
+                    "link": entry.link,
+                    "comment": f"[{feed_info['source']}] 자동 수집됨",
+                    "author": "NewsBot 🤖",
+                    "tags": feed_info['tag']
+                    # Date는 GAS 스크립트 내부에서 자동 생성됨 (보통)
                 }
                 
-                # SheetDB로 전송 (POST)
-                response = requests.post(SHEET_DB_URL, json=payload, headers=headers)
+                # GAS로 전송 (POST)
+                # GAS는 리다이렉트를 반환하므로 allow_redirects=True (기본값)
+                response = requests.post(GAS_API_URL, data=json.dumps(payload), headers=headers)
                 
-                if response.status_code == 201 or response.status_code == 200:
+                if response.status_code == 200 or response.status_code == 302:
                     print(f"✅ Sent: {entry.title}")
                 else:
-                    print(f"❌ Fail: {response.text}")
+                    print(f"❌ Fail ({response.status_code}): {response.text[:100]}")
                 
         except Exception as e:
             print(f"❌ Error: {e}")
