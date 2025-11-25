@@ -164,78 +164,86 @@
 
     <main class="container mx-auto px-6 py-8">
         <div id="main-dashboard" class="transition-opacity duration-300">
-                            </span>
-                            ${newBadge} </div>
-                        ${tagsHTML}
-                        <div class="flex justify-between items-center text-xs text-muted-foreground mt-auto">
-                            <span class="flex items-center gap-1 opacity-80"><i data-lucide="user" class="w-3 h-3"></i> ${item.author}</span>
-                            <span class="opacity-80">${item.date}</span>
-                        </div>
-                    </div>`;
-                });
+            </span>
+            ${newBadge} </div>
+        ${tagsHTML}
+        <div class="flex justify-between items-center text-xs text-muted-foreground mt-auto">
+            <span class="flex items-center gap-1 opacity-80"><i data-lucide="user" class="w-3 h-3"></i>
+                ${item.author}</span>
+            <span class="opacity-80">${item.date}</span>
+        </div>
+        </div>`;
+        });
 
-                if (group.items.length === 0) itemsHTML = `<div class="py-4 text-center text-sm text-muted-foreground">아직 공유된 내용이 없습니다.</div>`;
+        if (group.items.length === 0) itemsHTML = `<div class="py-4 text-center text-sm text-muted-foreground">아직 공유된
+            내용이 없습니다.</div>`;
 
-                wall.innerHTML += `
-                <div class="rounded-xl border bg-card text-card-foreground shadow-sm flex flex-col h-full">
-                    <div class="flex flex-col space-y-1.5 p-6 pb-3">
-                        <h3 class="text-lg font-semibold flex items-center gap-2"><i data-lucide="${group.icon}" class="w-5 h-5 text-primary"></i>${group.posterTitle}</h3>
-                        <p class="text-sm text-muted-foreground">${group.description}</p>
-                    </div>
-                    <div class="p-6 pt-0 flex-1">
-                        <div class="flex flex-col divide-y divide-border">${itemsHTML}</div>
-                    </div>
-                    <div class="flex items-center p-6 pt-0 gap-3 mt-auto">
-                        <button onclick="openBoard('${group.category}')" class="flex-1 inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 transition-all active:scale-95">View All</button>
-                        <button onclick="openModal('${group.category}')" class="flex-1 inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 py-2 transition-all active:scale-95 gap-1"><i data-lucide="pen-line" class="w-3.5 h-3.5"></i> Write</button>
-                    </div>
-                </div>`;
-            });
-            lucide.createIcons();
+        wall.innerHTML += `
+        <div class="rounded-xl border bg-card text-card-foreground shadow-sm flex flex-col h-full">
+            <div class="flex flex-col space-y-1.5 p-6 pb-3">
+                <h3 class="text-lg font-semibold flex items-center gap-2"><i data-lucide="${group.icon}"
+                        class="w-5 h-5 text-primary"></i>${group.posterTitle}</h3>
+                <p class="text-sm text-muted-foreground">${group.description}</p>
+            </div>
+            <div class="p-6 pt-0 flex-1">
+                <div class="flex flex-col divide-y divide-border">${itemsHTML}</div>
+            </div>
+            <div class="flex items-center p-6 pt-0 gap-3 mt-auto">
+                <button onclick="openBoard('${group.category}')"
+                    class="flex-1 inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 transition-all active:scale-95">View
+                    All</button>
+                <button onclick="openModal('${group.category}')"
+                    class="flex-1 inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 py-2 transition-all active:scale-95 gap-1"><i
+                        data-lucide="pen-line" class="w-3.5 h-3.5"></i> Write</button>
+            </div>
+        </div>`;
+        });
+        lucide.createIcons();
         }
 
         // 통계 함수 (서버 호출)
         async function initVisitorCounter() {
-            try {
-                const response = await fetch(GOOGLE_SHEET_API_URL + "?action=recordVisit");
-                if (!response.ok) throw new Error(`Stats HTTP error! status: ${response.status}`);
-                const stats = await response.json();
-                if (stats.result === 'success') {
-                    animateCounter('visit-today', stats.today);
-                    animateCounter('visit-total', stats.total);
-                } else {
-                    throw new Error(stats.error);
-                }
-            } catch (error) {
-                console.error('Error fetching stats:', error);
-                animateCounter('visit-today', 0);
-                animateCounter('visit-total', 0);
-            }
+        try {
+        const response = await fetch(GOOGLE_SHEET_API_URL + "?action=recordVisit");
+        if (!response.ok) throw new Error(`Stats HTTP error! status: ${response.status}`);
+        const stats = await response.json();
+        if (stats.result === 'success') {
+        animateCounter('visit-today', stats.today);
+        animateCounter('visit-total', stats.total);
+        } else {
+        throw new Error(stats.error);
         }
-        function animateCounter(e, t) { const n = document.getElementById(e); let a = 0; const o = 1e3, r = performance.now(); function c(e) { const i = e - r, s = Math.min(i / o, 1), l = Math.floor(a + (t - a) * (1 - Math.pow(1 - s, 3))); n.textContent = l.toLocaleString(), s < 1 ? requestAnimationFrame(c) : n.textContent = t.toLocaleString() } requestAnimationFrame(c) }
-
-        // --- [수정] 다크모드 리스너 추가 ---
-        document.getElementById('theme-toggle').addEventListener('click', () => {
+        } catch (error) {
+        console.error('Error fetching stats:', error);
+        animateCounter('visit-today', 0);
+        animateCounter('visit-total', 0);
+        }
+        }
+        function animateCounter(e, t) { const n = document.getElementById(e); let a = 0; const o = 1e3, r =
+        performance.now(); function c(e) { const i = e - r, s = Math.min(i / o, 1), l = Math.floor(a + (t - a) * (1 -
+        Math.pow(1 - s, 3))); n.textContent = l.toLocaleString(), s < 1 ? requestAnimationFrame(c) :
+            n.textContent=t.toLocaleString() } requestAnimationFrame(c) } // --- [수정] 다크모드 리스너 추가 ---
+            document.getElementById('theme-toggle').addEventListener('click', ()=> {
             const isDark = document.documentElement.classList.toggle('dark');
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
-        });
+            });
 
-        // --- 비밀번호 로직 (서버 인증) ---
-        const gate = document.getElementById("access-gate"),
+            // --- 비밀번호 로직 (서버 인증) ---
+            const gate = document.getElementById("access-gate"),
             gatePw = document.getElementById("gate-password"),
             gateErr = document.getElementById("gate-error"),
             gateSubmit = document.getElementById("gate-submit");
 
-        if ("true" === sessionStorage.getItem("insight_wall_auth")) {
+            if ("true" === sessionStorage.getItem("insight_wall_auth")) {
             gate.style.display = "none";
             document.body.classList.remove("overflow-hidden");
-        }
+            }
 
-        async function unlock() {
+            async function unlock() {
             const pass = gatePw.value;
             if (!pass) {
-                gatePw.focus();
-                return;
+            gatePw.focus();
+            return;
             }
 
             gateSubmit.disabled = true;
@@ -243,41 +251,130 @@
             gateErr.classList.add('hidden');
 
             try {
-                const response = await fetch(GOOGLE_SHEET_API_URL + "?action=checkPassword&pass=" + encodeURIComponent(pass));
-                if (!response.ok) throw new Error('서버 통신 실패');
-                const data = await response.json();
+            const response = await fetch(GOOGLE_SHEET_API_URL + "?action=checkPassword&pass=" +
+            encodeURIComponent(pass));
+            if (!response.ok) throw new Error('서버 통신 실패');
+            const data = await response.json();
 
-                if (data.result === 'success') {
-                    sessionStorage.setItem("insight_wall_auth", "true");
-                    gate.style.opacity = "0";
-                    setTimeout(() => {
-                        gate.style.display = "none";
-                        document.body.classList.remove("overflow-hidden");
-                    }, 500);
-                } else {
-                    throw new Error('비밀번호 불일치');
-                }
-            } catch (error) {
-                console.error('Unlock error:', error.message);
-                gateErr.classList.remove("hidden");
-                gatePw.classList.add("animate-shake", "border-red-500", "ring-red-500");
-                setTimeout(() => gatePw.classList.remove("animate-shake", "border-red-500", "ring-red-500"), 500);
-                gatePw.value = "";
-                gatePw.focus();
-                gateSubmit.disabled = false;
-                gateSubmit.innerText = '입장하기';
+            if (data.result === 'success') {
+            sessionStorage.setItem("insight_wall_auth", "true");
+            gate.style.opacity = "0";
+            setTimeout(() => {
+            gate.style.display = "none";
+            document.body.classList.remove("overflow-hidden");
+            }, 500);
+            } else {
+            throw new Error('비밀번호 불일치');
             }
-        }
+            } catch (error) {
+            console.error('Unlock error:', error.message);
+            gateErr.classList.remove("hidden");
+            gatePw.classList.add("animate-shake", "border-red-500", "ring-red-500");
+            setTimeout(() => gatePw.classList.remove("animate-shake", "border-red-500", "ring-red-500"), 500);
+            gatePw.value = "";
+            gatePw.focus();
+            gateSubmit.disabled = false;
+            gateSubmit.innerText = '입장하기';
+            }
+            }
 
-        document.getElementById("gate-submit").addEventListener("click", unlock);
-        gatePw.addEventListener("keypress", e => { "Enter" === e.key && unlock() });
-        // --- 비밀번호 로직 끝 ---
+            document.getElementById("gate-submit").addEventListener("click", unlock);
+            gatePw.addEventListener("keypress", e => { "Enter" === e.key && unlock() });
+            // --- 비밀번호 로직 끝 ---
 
-        // --- (이하 나머지 코드는 동일) ---
-        let currentCategory = ""; const mainDash = document.getElementById("main-dashboard"), boardView = document.getElementById("board-view"), boardTitle = document.getElementById("board-title"), boardDesc = document.getElementById("board-desc"), boardList = document.getElementById("board-list"), boardWriteBtn = document.getElementById("board-write-btn"), boardSearch = document.getElementById("board-search"), noResult = document.getElementById("no-result"); function openBoard(e) { currentCategory = e; const t = groupedMockData.find(t => t.category === e); t && (mainDash.classList.add("hidden"), boardView.classList.remove("hidden"), window.scrollTo(0, 0), boardTitle.innerHTML = `<i data-lucide="${t.icon}" class="w-8 h-8 text-primary"></i> ${t.posterTitle}`, boardDesc.textContent = t.description, boardWriteBtn.onclick = () => openModal(e), boardSearch.value = "", renderBoardList(t.items), lucide.createIcons()) } function closeBoard() { boardView.classList.add("hidden"), mainDash.classList.remove("hidden") } function renderBoardList(e) { boardList.innerHTML = "", 0 === e.length ? noResult.classList.remove("hidden") : (noResult.classList.add("hidden"), e.forEach(e => { const t = e.isNew ? '<span class="ml-2 inline-flex items-center rounded-full border border-rose-500/30 bg-rose-500/10 px-2 py-0.5 text-[10px] font-bold text-rose-600 dark:text-rose-400 shadow-[0_0_8px_rgba(244,63,94,0.2)]">NEW</span>' : "", n = e.tags && e.tags.length > 0 ? `<div class="flex flex-wrap gap-1 mt-1">${e.tags.map(e => `<span class="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded-sm">#${e}</span>`).join("")}</div>` : ""; boardList.innerHTML += `<tr class="hover:bg-muted/50 transition-colors cursor-pointer group" onclick="window.open('${e.link}', '_blank')"><td class="p-4 align-top"><div class="font-medium hover:underline underline-offset-4 group-hover:text-primary transition-colors">${e.title}${t}</div>${n}</td><td class="p-4 text-muted-foreground align-top whitespace-nowrap"><div class="flex items-center gap-1"><i data-lucide="user" class="w-3 h-3"></i> ${e.author || "익명"}</div></td><td class="p-4 text-right text-muted-foreground align-top whitespace-nowrap">${e.date}</td></tr>` })), lucide.createIcons() } boardSearch.addEventListener("input", e => { const t = e.target.value.toLowerCase(), n = groupedMockData.find(e => e.category === currentCategory); if (!n) return; const a = n.items.filter(e => (e.title && e.title.toLowerCase().includes(t)) || (e.author && e.author.toLowerCase().includes(t)) || (e.tags && e.tags.some(e => e.toLowerCase().includes(t)))); renderBoardList(a) }); const modal = document.getElementById("write-modal"), catSel = document.getElementById("modal-category"); function openModal(e) { catSel.value = e, modal.classList.remove("hidden"), modal.classList.add("flex") } function closeModal() { modal.classList.add("hidden"), modal.classList.remove("flex"), ["modal-title", "modal-tags", "modal-link", "modal-comment", "modal-author"].forEach(e => document.getElementById(e).value = "") } document.getElementById("modal-close").addEventListener("click", closeModal), modal.addEventListener("click", e => { e.target === modal && closeModal() });
+            // --- (이하 나머지 코드는 동일) ---
+            let currentCategory = "";
+            const mainDash = document.getElementById("main-dashboard"),
+            boardView = document.getElementById("board-view"),
+            boardTitle = document.getElementById("board-title"),
+            boardDesc = document.getElementById("board-desc"),
+            boardList = document.getElementById("board-list"),
+            boardWriteBtn = document.getElementById("board-write-btn"),
+            boardSearch = document.getElementById("board-search"),
+            noResult = document.getElementById("no-result");
 
-        // '공유하기' 버튼 클릭 시 실제 데이터 전송
-        document.getElementById('modal-submit').addEventListener('click', async () => {
+            function openBoard(e) {
+            currentCategory = e;
+            const t = groupedMockData.find(t => t.category === e);
+            if (t) {
+            mainDash.classList.add("hidden");
+            boardView.classList.remove("hidden");
+            window.scrollTo(0, 0);
+            boardTitle.innerHTML = `<i data-lucide="${t.icon}" class="w-8 h-8 text-primary"></i> ${t.posterTitle}`;
+            boardDesc.textContent = t.description;
+            boardWriteBtn.onclick = () => openModal(e);
+            boardSearch.value = "";
+            renderBoardList(t.items);
+            lucide.createIcons();
+            }
+            }
+
+            function closeBoard() {
+            boardView.classList.add("hidden");
+            mainDash.classList.remove("hidden");
+            }
+
+            function renderBoardList(e) {
+            boardList.innerHTML = "";
+            if (e.length === 0) {
+            noResult.classList.remove("hidden");
+            } else {
+            noResult.classList.add("hidden");
+            e.forEach(e => {
+            const t = e.isNew ? '<span
+                class="ml-2 inline-flex items-center rounded-full border border-rose-500/30 bg-rose-500/10 px-2 py-0.5 text-[10px] font-bold text-rose-600 dark:text-rose-400 shadow-[0_0_8px_rgba(244,63,94,0.2)]">NEW</span>'
+            : "";
+            const n = e.tags && e.tags.length > 0 ? `<div class="flex flex-wrap gap-1 mt-1">${e.tags.map(e => `<span
+                    class="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded-sm">#${e}</span>`).join("")}
+            </div>` : "";
+            boardList.innerHTML += `<tr class="hover:bg-muted/50 transition-colors cursor-pointer group"
+                onclick="window.open('${e.link}', '_blank')">
+                <td class="p-4 align-top">
+                    <div
+                        class="font-medium hover:underline underline-offset-4 group-hover:text-primary transition-colors">
+                        ${e.title}${t}</div>${n}
+                </td>
+                <td class="p-4 text-muted-foreground align-top whitespace-nowrap">
+                    <div class="flex items-center gap-1"><i data-lucide="user" class="w-3 h-3"></i> ${e.author || "익명"}
+                    </div>
+                </td>
+                <td class="p-4 text-right text-muted-foreground align-top whitespace-nowrap">${e.date}</td>
+            </tr>`;
+            });
+            lucide.createIcons();
+            }
+            }
+
+            boardSearch.addEventListener("input", e => {
+            const t = e.target.value.toLowerCase();
+            const n = groupedMockData.find(e => e.category === currentCategory);
+            if (!n) return;
+            const a = n.items.filter(e => (e.title && e.title.toLowerCase().includes(t)) || (e.author &&
+            e.author.toLowerCase().includes(t)) || (e.tags && e.tags.some(e => e.toLowerCase().includes(t))));
+            renderBoardList(a);
+            });
+
+            const modal = document.getElementById("write-modal"),
+            catSel = document.getElementById("modal-category");
+
+            function openModal(e) {
+            catSel.value = e;
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
+            }
+
+            function closeModal() {
+            modal.classList.add("hidden");
+            modal.classList.remove("flex");
+            ["modal-title", "modal-tags", "modal-link", "modal-comment", "modal-author"].forEach(e =>
+            document.getElementById(e).value = "");
+            }
+
+            document.getElementById("modal-close").addEventListener("click", closeModal);
+            modal.addEventListener("click", e => { e.target === modal && closeModal() });
+
+            // '공유하기' 버튼 클릭 시 실제 데이터 전송
+            document.getElementById('modal-submit').addEventListener('click', async () => {
             const submitBtn = document.getElementById('modal-submit');
             const originalBtnText = submitBtn.innerText;
             const category = document.getElementById('modal-category').value;
@@ -295,31 +392,31 @@
             const payload = { category, title, tags, link, comment, author };
 
             try {
-                await fetch(GOOGLE_SHEET_API_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    cache: 'no-cache',
-                    headers: { 'Content-Type': 'text/plain' },
-                    body: JSON.stringify(payload)
-                });
-                alert('성공적으로 공유되었습니다!');
-                closeModal();
-                setTimeout(() => {
-                    fetchData();
-                }, 1000);
+            await fetch(GOOGLE_SHEET_API_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            cache: 'no-cache',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify(payload)
+            });
+            alert('성공적으로 공유되었습니다!');
+            closeModal();
+            setTimeout(() => {
+            fetchData();
+            }, 1000);
             } catch (error) {
-                console.error('Error submitting data:', error);
-                alert('저장에 실패했습니다. 잠시 후 다시 시도해주세요.');
+            console.error('Error submitting data:', error);
+            alert('저장에 실패했습니다. 잠시 후 다시 시도해주세요.');
             } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerText = originalBtnText;
+            submitBtn.disabled = false;
+            submitBtn.innerText = originalBtnText;
             }
-        });
+            });
 
-        // 페이지 로드 시 실행
-        initVisitorCounter();
-        fetchData(); 
-    </script>
+            // 페이지 로드 시 실행
+            initVisitorCounter();
+            fetchData();
+            </script>
 </body>
 
 </html>
