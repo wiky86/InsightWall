@@ -341,33 +341,15 @@
 
                 // 제목이 없으면 스킵
                 if (!title) continue;
-
-                const group = groupedMockData.find(g => g.category === targetCategory);
-
-                if (group) {
-                    // 날짜 계산 (NEW 배지)
-                    let isRecent = false;
-                    if (dateStr) {
-                        // 2025. 11. 11 같은 한국식 날짜도 처리하기 위해 문자열 정리
-                        const cleanDate = dateStr.replace(/\./g, '-').replace(' 오후', '').replace(' 오전', '');
-                        const postDate = new Date(cleanDate);
-                        const now = new Date();
-                        const diffHours = (now - postDate) / (1000 * 60 * 60);
-                        if (diffHours < 24) isRecent = true;
-                    }
-
-                    group.items.push({
-                        title: title,
-                        date: dateStr,
-                        author: author,
-                        tags: tags ? tags.split(',').map(t => t.trim()) : [],
+                author: author,
+                    tags: tags ? tags.split(',').map(t => t.trim()) : [],
                         link: link || '#',
-                        comment: comment || '',
-                        isNew: isRecent
-                    });
-                }
+                            comment: comment || '',
+                                isNew: isRecent
+            });
+        }
             }
-            renderPosters();
+        renderPosters();
         }
 
         // --- [수정됨] 렌더링 함수 ---
